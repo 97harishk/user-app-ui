@@ -9,7 +9,15 @@
                 <button class="btn btn-primary" @click="logout()">Logout</button>
             </div>
         </div>
-        <Table class="table table-hover">
+        <div class="form-group">
+            <input type="text"
+                class="form-control"
+                v-model="filterKey"
+                placeholder="Search User"
+            />
+            <div class="invalid-feedback">{{ data?.error }}</div>
+        </div>
+        <table class="table table-hover">
             <thead>
                 <tr>
                     <th scope="col">Name</th>
@@ -19,15 +27,18 @@
                 </tr>
             </thead>
             <tbody>
-                <tr v-for="(user, index) in filterUsers" :key="index">
+                <tr v-for="(user, index) in showUserList" :key="index">
                     <td>{{ user?.first_name + " " + user?.last_name }}</td>
-                    <td>@{{ user?.username }}</td>
+                    <td>{{ user?.username }}</td>
                     <td><button type="button" class="btn btn-danger" @click="() =>deleteHandler(user?._id)" v-if="isCurrentUser(user?._id)">Delete</button></td>
                     <td><button type="button" class="btn btn-info" @click="() =>updateHandler({ ...user })">Update</button></td>
                 </tr>
             </tbody>
-        </Table>
-        <user-pagination :userData="users" />
+        </table>
+        <user-pagination
+         :userData="users"
+         :setShowUsers="setShowUsers"
+          />
         <DeleteModal
             v-if="showDeleteModal" 
             :deleteHandler="deleteHandler" 
@@ -67,6 +78,8 @@ export default {
             listId: null,
             index: 1,
             userData: {},
+            showUsers: [],
+            filterKey: "",
         }
     },
     methods: {
@@ -107,7 +120,10 @@ export default {
                 return item;
             })
             this.users = users;
-        }
+        },
+        setShowUsers: function(users){
+            this.showUsers = users;
+        },
     },
     computed: {
         name : function(){  
@@ -115,6 +131,16 @@ export default {
         },
         filterUsers: function(){
             return this.users?.filter((iteme, i) => i < 10);
+        },
+        showUserList: function(){
+            if(this.filterKey !== ''){
+                const filtrerUser = this.users.filter(user =>
+            user.username.toLowerCase().includes(this.filterKey.toLowerCase()
+              )
+          )
+          return filtrerUser
+            }
+        return this.showUsers;
         }
     },
     mounted(){
